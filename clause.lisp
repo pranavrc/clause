@@ -3,6 +3,10 @@
 ;;; Pranav Ravichandran <me@onloop.net>
 
 (defstruct
+  (var
+    (:constructor var (x))) x)
+
+(defstruct
   (fact
     (:constructor deffact (func &rest params)))
   func params)
@@ -19,8 +23,9 @@
     (:constructor defwff (operator wffs)))
   operator wffs)
 
-(defun cnf-rule (facts implications)
-  (defwff 'or (demorgan (defwff 'not facts)) (demorgan implications)))
+(defun cnf-rule (facts-wff implications-wff)
+  (defwff 'or (list (demorgan (defwff 'not facts-wff))
+                    (demorgan implications-wff))))
 
 (defun demorgan (wff &aux
                      (operator (if (wff-p wff) (wff-operator wff)))
@@ -44,3 +49,6 @@
           ((notevery #'fact-p operand)
            (defwff operator (mapcar #'(lambda (x) (demorgan x)) operand)))
           ('else wff))))
+
+(defun resolve (facts rules goal)
+  ())
