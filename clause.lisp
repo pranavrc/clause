@@ -16,7 +16,7 @@
 
 (defstruct
   (wff
-    (:constructor defwff (operator &rest wffs)))
+    (:constructor defwff (operator wffs)))
   operator wffs)
 
 (defun cnf-rule (facts implications)
@@ -32,11 +32,13 @@
            (cond ((equal (wff-operator (car operand)) 'and)
                   (defwff 'or (mapcar
                                 #'(lambda (x)
-                                    (demorgan (defwff 'not x))) (wff-wffs (car operand)))))
+                                    (demorgan (defwff 'not (list x))))
+                                (wff-wffs (car operand)))))
                  ((equal (wff-operator (car operand)) 'or)
                   (defwff 'and (mapcar
                                  #'(lambda (x)
-                                     (demorgan (defwff 'not x))) (wff-wffs (car operand)))))
+                                     (demorgan (defwff 'not (list x))))
+                                 (wff-wffs (car operand)))))
                  ((equal (wff-operator (car operand)) 'not)
                   (wff-wffs (car operand)))))
           ((notevery #'fact-p operand)
