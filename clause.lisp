@@ -23,15 +23,9 @@
     (:constructor defwff (operator wffs)))
   operator wffs)
 
-(defstruct
-  (cnf
-    (:constructor defcnf (operator wffs &aux
-                                   (cnf (cnf-wff (defwff operator wffs))))))
-  operator wffs cnf)
-
 (defun cnf-rule (facts-wff implications-wff)
-  (defwff 'or (list (demorgan (defwff 'not facts-wff))
-                    (demorgan implications-wff))))
+  (cnf-wff (defwff 'or (list (demorgan (defwff 'not facts-wff))
+                             (demorgan implications-wff)))))
 
 (defun cnf-wff (wff)
   (let ((dwff (demorgan wff)))
@@ -53,11 +47,19 @@
                  (wff-wffs dwff))))
       ((equal (wff-operator dwff) 'not) dwff))))
 
+(defun fequal (ewff-1 ewff-2)
+  (every #'(lambda (pair)
+             (if (typep (car pair) 'list)
+               (fequal (car pair) (cdr pair))
+               (or (equal (car pair) (cdr pair))
+                   (or (var-p (car pair)) (var-p (cdr pair))))))
+         (pairlis ewff-1 ewff-2)))
+
 (defun isnegation (wff-1 wff-2)
   (cond ((and (fact-p wff-1) (wff-p wff-2))
-         (if (equal (list 'not (evaluate wff-1)) (evaluate wff-2)) t nil))
+         (if (fequal (list 'not (evaluate wff-1)) (evaluate wff-2)) t nil))
         ((and (fact-p wff-2) (wff-p wff-1))
-         (if (equal (list 'not (evaluate wff-2)) (evaluate wff-1)) t nil))))
+         (if (fequal (list 'not (evaluate wff-2)) (evaluate wff-1)) t nil))))
 
 (defun evaluate (wff)
   (cond
@@ -66,7 +68,6 @@
      (let ((dwff (demorgan wff)))
        (append (list (wff-operator dwff))
                (mapcar #'(lambda (x) (evaluate x)) (wff-wffs dwff)))))))
-
 
 (defun demorgan (wff &aux
                      (operator (if (wff-p wff) (wff-operator wff)))
@@ -91,7 +92,7 @@
            (defwff operator (mapcar #'(lambda (x) (demorgan x)) operand)))
           ('else wff))))
 
-;(defun resolve (facts rules goal &aux
-;                      (goal-negation (defwff 'not (list goal)))
-;                      (ans-literal (deffact 'ans )
-;  ())))
+(defun resolve (facts rules goal &aux
+                      (goal-negation (cnf-wff (defwff 'not (list goal))))
+                      (ans-literal (deffact 'ans (goal-vars goal))))
+  ())
