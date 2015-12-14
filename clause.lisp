@@ -1,16 +1,19 @@
-;;; Resolution-based Q&A system.
+;;; Resolution Refutation in Common Lisp.
 ;;;
 ;;; Pranav Ravichandran <me@onloop.net>
 
+;;; Variables.
 (defstruct
   (var
     (:constructor var (x))) x)
 
+;;; Facts.
 (defstruct
   (fact
     (:constructor deffact (func &rest params)))
   func params)
 
+;;; Rules.
 (defstruct
   (rule
     (:constructor defrule (facts
@@ -18,16 +21,19 @@
                            &aux (cnf (cnf-rule facts implications)))))
   facts implications cnf)
 
+;;; Well formed formulas.
 (defstruct
   (wff
     (:constructor defwff (operator wffs)))
   operator wffs)
 
 (defun cnf-rule (facts-wff implications-wff)
+  "Transform a rule into CNF."
   (cnf-wff (defwff 'or (list (cnf-wff (defwff 'not (list facts-wff)))
                              (cnf-wff implications-wff)))))
 
 (defun cnf-wff (wff)
+  "Transform a well-formed formula into CNF."
   (let ((dwff (flatten (demorgan wff))))
     (cond
       ((fact-p dwff) dwff)
@@ -48,6 +54,7 @@
       ((equal (wff-operator dwff) 'not) dwff))))
 
 (defun fequal (ewff-1 ewff-2)
+  "Check if two evaluated wffs are equal."
   (if (= (length ewff-1) (length ewff-2))
     (every #'(lambda (pair)
                (if (typep (car pair) 'list)
@@ -57,6 +64,7 @@
            (pairlis ewff-1 ewff-2))))
 
 (defun get-substitutions (ewff-1 ewff-2)
+  "Get substitutions in a wff transformation."
   (let* ((resolved (set-difference ewff-1 ewff-2 :test 'equal))
          (resolved-wff (remove-if-not #'(lambda (x) (equal (car x) 'not)) resolved))
          (resolved-fact (remove-if #'(lambda (x) (equal (car x) 'not)) resolved)))
@@ -64,6 +72,7 @@
       (get-substitutions-helper (car resolved-wff) (list 'not (car resolved-fact))))))
 
 (defun get-substitutions-helper (ewff-1 ewff-2)
+  "Helper to get-substitutions."
   (if (= (length ewff-1) (length ewff-2))
     (remove nil
             (mapcar #'(lambda (pair)
@@ -75,12 +84,14 @@
                     (pairlis ewff-1 ewff-2)))))
 
 (defun isnegation (wff-1 wff-2)
+  "Return true of one wff is the negation of the other."
   (cond ((and (fact-p wff-1) (wff-p wff-2))
          (if (fequal (list 'not (evaluate wff-1)) (evaluate wff-2)) t nil))
         ((and (fact-p wff-2) (wff-p wff-1))
          (if (fequal (list 'not (evaluate wff-2)) (evaluate wff-1)) t nil))))
 
 (defun evaluate (wff)
+  "Transform a wff into a raw list."
   (cond
     ((fact-p wff) (append (list (fact-func wff)) (fact-params wff)))
     ((wff-p wff)
@@ -91,6 +102,7 @@
 (defun demorgan (wff &aux
                      (operator (if (wff-p wff) (wff-operator wff)))
                      (operand (if (wff-p wff) (wff-wffs wff))))
+  "Transform a wff using DeMorgan's laws."
   (if (fact-p wff)
     wff
     (cond ((and (equal operator 'not)
@@ -115,6 +127,7 @@
                     (dwff (demorgan wff))
                     (operator (if (wff-p dwff) (wff-operator dwff)))
                     (operand (if (wff-p dwff) (wff-wffs dwff))))
+  "Remove nested predicates of the same type and flatten a wff."
   (if (or (fact-p dwff) (every #'fact-p operand))
     dwff
     (cond ((equal operator 'not)
@@ -141,7 +154,10 @@
                         (if negate
                           (cnf-wff (defwff 'not (list goal)))
                           goal)))
-  (progn (format t "Resolvent: ~a~%~%" goal-negation)
+  "Start and recurse the resolution refutation process until nil is found.
+  Return the list of substitutions carried out at each step."
+  (progn (format t "Resolvent: ~a~%" goal-negation)
+         (format t "Substitution: ~a~%~%" (car (last ans)))
   (if (and (wff-p goal-negation) (not (wff-wffs goal-negation)))
     ans
     (loop for wff in (append facts rules)
