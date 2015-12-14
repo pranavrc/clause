@@ -141,6 +141,7 @@
                         (if negate
                           (cnf-wff (defwff 'not (list goal)))
                           goal)))
+  (progn (format t "Resolvent: ~a~%~%" goal-negation)
   (if (and (wff-p goal-negation) (not (wff-wffs goal-negation)))
     ans
     (loop for wff in (append facts rules)
@@ -157,5 +158,4 @@
           return (resolve facts rules (cnf-wff (flatten ecnf)) nil
                           (append ans (get-substitutions
                                         (evaluate (flatten cnf))
-                                        (evaluate (flatten ecnf))))))))
-
+                                        (evaluate (flatten ecnf)))))))))
