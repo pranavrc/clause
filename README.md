@@ -9,26 +9,26 @@ James Whitcomb Riley [once said](https://en.wikipedia.org/wiki/Duck_test): *When
 A mallard is a bird walks like a duck, quacks like a duck and swims like a duck. Is it a duck?
 
 ```
-bird(mallard)
+is-bird(mallard)
 walks-like-duck(mallard)
 swims-like-duck(mallard)
 quacks-like-duck(mallard)
-(bird(X)&walks-like-duck(X)&swims-like-duck(X)&quacks-like-duck(X))==>is-duck(X)
+(is-bird(X)&walks-like-duck(X)&swims-like-duck(X)&quacks-like-duck(X))==>is-duck(X)
 ```
 
 To prove: `is-duck(mallard)`
 
 ```
 > (load "clause.lisp")
-> (setq bird (deffact 'bird 'mallard))
-#<FACT :FUNC BIRD :PARAMS (MALLARD)>
+> (setq is-bird (deffact 'is-bird 'mallard))
+#<FACT :FUNC IS-BIRD :PARAMS (MALLARD)>
 > (setq walks-like-duck (deffact 'walks-like-duck 'mallard))#<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (MALLARD)>
 > (setq swims-like-duck (deffact 'swims-like-duck 'mallard))#<FACT :FUNC SWIMS-LIKE-DUCK :PARAMS (MALLARD)>
 > (setq quacks-like-duck (deffact 'quacks-like-duck 'mallard))#<FACT :FUNC QUACKS-LIKE-DUCK :PARAMS (MALLARD)>
-> (setq facts (defwff 'and (list (deffact 'bird (var 'x)) (deffact 'walks-like-duck (var 'x)) (deffact 'swims-like-duck (var 'x)) (deffact 'quacks-like-duck (var 'x)))))
+> (setq facts (defwff 'and (list (deffact 'is-bird (var 'x)) (deffact 'walks-like-duck (var 'x)) (deffact 'swims-like-duck (var 'x)) (deffact 'quacks-like-duck (var 'x)))))
 #<WFF :OPERATOR AND
   :WFFS
-  (#<FACT :FUNC BIRD :PARAMS (#<VAR :X X>)> #<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>
+  (#<FACT :FUNC IS-BIRD :PARAMS (#<VAR :X X>)> #<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>
    #<FACT :FUNC SWIMS-LIKE-DUCK :PARAMS (#<VAR :X X>)> #<FACT :FUNC QUACKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
 > (setq implications (deffact 'is-duck (var 'x)))
 #<FACT :FUNC IS-DUCK :PARAMS (#<VAR :X X>)>
@@ -37,26 +37,26 @@ To prove: `is-duck(mallard)`
   :FACTS
   #<WFF :OPERATOR AND
     :WFFS
-    (#<FACT :FUNC BIRD :PARAMS (#<VAR :X X>)> #<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>
+    (#<FACT :FUNC IS-BIRD :PARAMS (#<VAR :X X>)> #<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>
      #<FACT :FUNC SWIMS-LIKE-DUCK :PARAMS (#<VAR :X X>)> #<FACT :FUNC QUACKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
   :IMPLICATIONS #<FACT :FUNC IS-DUCK :PARAMS (#<VAR :X X>)>
   :CNF
   #<WFF :OPERATOR OR
     :WFFS
-    (#<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC BIRD :PARAMS (#<VAR :X X>)>)>
+    (#<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC IS-BIRD :PARAMS (#<VAR :X X>)>)>
      #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
      #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC SWIMS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
      #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC QUACKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)> #<FACT :FUNC IS-DUCK :PARAMS (#<VAR :X X>)>)>>
 > (setq goal (deffact 'is-duck 'mallard))
 #<FACT :FUNC IS-DUCK :PARAMS (MALLARD)>
-> (resolve (list bird walks-like-duck swims-like-duck quacks-like-duck) (list rule) goal)
+> (resolve (list is-bird walks-like-duck swims-like-duck quacks-like-duck) (list rule) goal)
 Resolvent: #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC IS-DUCK :PARAMS (MALLARD)>)>
 Substitution: NIL
 
 Resolvent: 
 #<WFF :OPERATOR OR
   :WFFS
-  (#<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC BIRD :PARAMS (#<VAR :X X>)>)>
+  (#<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC IS-BIRD :PARAMS (#<VAR :X X>)>)>
    #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC WALKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
    #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC SWIMS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>
    #<WFF :OPERATOR NOT :WFFS (#<FACT :FUNC QUACKS-LIKE-DUCK :PARAMS (#<VAR :X X>)>)>)>
